@@ -86,6 +86,9 @@ corovan_enabled = True
 order_enabled = True
 auto_def_enabled = True
 
+auto_buy_enabled = True
+auto_by_gold_limit = 103
+auto_by_item = '/buy_dagger2'
 
 @coroutine
 def work_with_message(receiver):
@@ -129,6 +132,9 @@ def parse_text(text, username, message_id):
     global corovan_enabled
     global order_enabled
     global auto_def_enabled
+    global auto_buy_enabled
+    global auto_by_gold_limit
+    global auto_by_item
     if bot_enabled and username == bot_username:
         log('Получили сообщение от бота. Проверяем условия')
 
@@ -160,6 +166,9 @@ def parse_text(text, username, message_id):
                 action_list.append('🌲Лес')
             elif arena_enabled and gold >= 5 and '🔎Поиск соперника' not in action_list and time() - lt_arena > 3600:
                 action_list.append('🔎Поиск соперника')
+            
+            if auto_buy_enabled and gold >= auto_by_gold_limit:
+                action_list.append(auto_by_item)
 
         elif arena_enabled and text.find('выбери точку атаки и точку защиты') != -1:
             lt_arena = time()
@@ -205,6 +214,8 @@ def parse_text(text, username, message_id):
                     '#disable_order - Выключить приказы',
                     '#enable_auto_def - Включить авто деф',
                     '#disable_auto_def - Выключить авто деф',
+                    '#enable_ab - Включить автопокупку',
+                    '#disable_ab - Выключить авто покупку',
                     '#status - Получить статус',
                     '#hero - Получить информацию о герое',
                     '#push_order - Добавить приказ ({0})'.format(','.join(orders)),
@@ -264,6 +275,14 @@ def parse_text(text, username, message_id):
                 auto_def_enabled = False
                 send_msg(admin_username, 'Авто деф успешно выключен')
 
+            # Настройки автопокупки
+            if text == '#enable_ab':
+                auto_buy_enabled = True
+                send_msg(admin_username, 'Авто покупка успешно включена')
+            if text == '#disable_ab':
+                auto_buy_enabled = False
+                send_msg(admin_username, 'Авто покупка успешно выключена')
+
             # Получить статус
             if text == '#status':
                 send_msg(admin_username, '\n'.join([
@@ -273,7 +292,10 @@ def parse_text(text, username, message_id):
                     'Корованы включены: {3}',
                     'Приказы включены: {4}',
                     'Авто деф включен: {5}',
-                ]).format(bot_enabled, arena_enabled, les_enabled, corovan_enabled, order_enabled, auto_def_enabled))
+                    'Авто покупка включена: {6}',
+                    '   Старт покупки от: {7} золота',
+                    '   Предмет покупки: {8}',
+                ]).format(bot_enabled, arena_enabled, les_enabled, corovan_enabled, order_enabled, auto_def_enabled, auto_buy_enabled, auto_by_gold_limit, auto_by_item)
 
             # Информация о герое
             if text == '#hero':
