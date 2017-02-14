@@ -151,10 +151,11 @@ def parse_text(text, username, message_id):
                     return
             log('Времени достаточно')
             # теперь узнаем, сколько у нас выносливости и золота
-            m = re.search('Золото: (-*[0-9]+)\\n.*Выносливость: ([0-9]+) из', text)
+            m = re.search('Золото: (-*[0-9]+)\\n.*Кристаллы: ([0-9]+)\\n.*Выносливость: ([0-9]+) из', text)
             gold = int(m.group(1))
-            endurance = int(m.group(2))
-            log('Золото: {0}, выносливость: {1}'.format(gold, endurance))
+            crystall = int(m.group(2))
+            endurance = int(m.group(3))
+            log('Золото: {0}, выносливость: {1}, кристаллы: {2}'.format(gold, endurance, crystall))
             if les_enabled and endurance > 0 and '🌲Лес' not in action_list:
                 action_list.append('🌲Лес')
             elif arena_enabled and gold >= 5 and '🔎Поиск соперника' not in action_list and time() - lt_arena > 3600:
