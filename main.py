@@ -216,6 +216,8 @@ def parse_text(text, username, message_id):
                     '#disable_auto_def - Выключить авто деф',
                     '#enable_ab - Включить автопокупку',
                     '#disable_ab - Выключить авто покупку',
+                    '#set_ab_gold_limit <number> - Установить лимит золота для старта покупки',
+                    '#set_ab_item <string> - Установить команду для покупки предмета',
                     '#status - Получить статус',
                     '#hero - Получить информацию о герое',
                     '#push_order - Добавить приказ ({0})'.format(','.join(orders)),
@@ -283,6 +285,14 @@ def parse_text(text, username, message_id):
                 auto_buy_enabled = False
                 send_msg(admin_username, 'Авто покупка успешно выключена')
 
+            if text.startswith('#set_ab_gold_limit'):
+                auto_by_gold_limit = int(text.split(' ')[1])
+                send_msg(admin_username, 'Лимит установлен. Покупка от {0} золота.'.format(auto_by_gold_limit))
+            
+            if text.startswith('#set_ab_item'):
+                auto_by_item = text.split(' ')[1]
+                send_msg(admin_username, 'Скупать предмет: ' + auto_by_item)
+
             # Получить статус
             if text == '#status':
                 send_msg(admin_username, '\n'.join([
@@ -292,10 +302,11 @@ def parse_text(text, username, message_id):
                     'Корованы включены: {3}',
                     'Приказы включены: {4}',
                     'Авто деф включен: {5}',
+                    ' ',
                     'Авто покупка включена: {6}',
-                    '   Старт покупки от: {7} золота',
-                    '   Предмет покупки: {8}',
-                ]).format(bot_enabled, arena_enabled, les_enabled, corovan_enabled, order_enabled, auto_def_enabled, auto_buy_enabled, auto_by_gold_limit, auto_by_item)
+                    'Старт покупки от: {7} золота',
+                    'Предмет покупки: {8}',
+                ]).format(bot_enabled, arena_enabled, les_enabled, corovan_enabled, order_enabled, auto_def_enabled, auto_buy_enabled, auto_by_gold_limit, auto_by_item))
 
             # Информация о герое
             if text == '#hero':
