@@ -20,8 +20,11 @@ admin_username = ''
 # username бота и/или человека, которые будут отправлять приказы
 order_usernames = ''
 
+# username бота и/или человека которому отправлять репорты о битвах
+report_username = ''
+
 # имя замка
-castle_name = 'blue'
+castle_name = 'red'
 
 # путь к сокет файлу
 socket_path = ''
@@ -32,7 +35,7 @@ host = 'localhost'
 # порт по которому сшулать
 port = 1338
 
-opts, args = getopt(sys.argv[1:], 'a:o:c:s:h:p', ['admin=', 'order=', 'castle=', 'socket=', 'host=', 'port='])
+opts, args = getopt(sys.argv[1:], 'a:o:c:r:s:h:p', ['admin=', 'order=', 'castle=', 'report=' 'socket=', 'host=', 'port='])
 
 for opt, arg in opts:
     if opt in ('-a', '--admin'):
@@ -41,6 +44,8 @@ for opt, arg in opts:
         order_usernames = arg.split(',')
     elif opt in ('-c', '--castle'):
         castle_name = arg
+    elif opt in ('-r', '--report'):
+        report_username = arg
     elif opt in ('-s', '--socket'):
         socket_path = arg
     elif opt in ('-h', '--host'):
@@ -85,10 +90,13 @@ les_enabled = True
 corovan_enabled = True
 order_enabled = True
 auto_def_enabled = True
+auto_report_enable = True
 
 auto_buy_enabled = True
-auto_by_gold_limit = 103
+auto_by_gold_limit = 123
 auto_by_item = '/buy_dagger2'
+
+need_report = True
 
 @coroutine
 def work_with_message(receiver):
@@ -135,6 +143,9 @@ def parse_text(text, username, message_id):
     global auto_buy_enabled
     global auto_by_gold_limit
     global auto_by_item
+    global auto_report_enable
+    global need_report
+
     if bot_enabled and username == bot_username:
         log('Получили сообщение от бота. Проверяем условия')
 
@@ -154,8 +165,13 @@ def parse_text(text, username, message_id):
                     state = re.search('Состояние:\\n(.*)$', text)
                     if auto_def_enabled and time() - current_order['time'] > 3600:
                         update_order(castle)
+                    if auto_report_enable and need_report:
+                        need_report = False
+                        action_list.append('/report')
                     return
             log('Времени достаточно')
+            # выставим флаг для заказа отчета перед осадой
+            need_report = True
             # теперь узнаем, сколько у нас выносливости и золота
             m = re.search('Золото: (-*[0-9]+)\\n.*Кристаллы: ([0-9]+)\\n.*Выносливость: ([0-9]+) из', text)
             gold = int(m.group(1))
@@ -177,6 +193,9 @@ def parse_text(text, username, message_id):
             log('Атака: {0}, Защита: {1}'.format(attack_chosen, cover_chosen))
             action_list.append(attack_chosen)
             action_list.append(cover_chosen)
+
+        elif auto_report_enable and text.find('Твои результаты в бою') != -1:
+            fwd(report_username, message_id)
 
     else:
         if bot_enabled and order_enabled and username in order_usernames:
@@ -214,6 +233,8 @@ def parse_text(text, username, message_id):
                     '#disable_order - Выключить приказы',
                     '#enable_auto_def - Включить авто деф',
                     '#disable_auto_def - Выключить авто деф',
+                    '#enable_auto_report - Включить авто репорт',
+                    '#disable_auto_report - Выключить авто репорт',
                     '#enable_ab - Включить автопокупку',
                     '#disable_ab - Выключить авто покупку',
                     '#set_ab_gold_limit <number> - Установить лимит золота для старта покупки',
@@ -269,6 +290,14 @@ def parse_text(text, username, message_id):
                 order_enabled = False
                 send_msg(admin_username, 'Приказы успешно выключены')
 
+            # Вкл/выкл автоматическую отправку отчета о битве
+            if text == '#enable_auto_report':
+                auto_report_enable = True
+                send_msg(admin_username, 'Авто отчеты включены')
+            if text == '#disable_auto_report':
+                auto_report_enable = False
+                send_msg(admin_username, 'Авто отчеты выключены')
+
             # Вкл/выкл авто деф
             if text == '#enable_auto_def':
                 auto_def_enabled = True
@@ -302,11 +331,12 @@ def parse_text(text, username, message_id):
                     'Корованы включены: {3}',
                     'Приказы включены: {4}',
                     'Авто деф включен: {5}',
+                    'Авто отчет включен: {6}'
                     ' ',
-                    'Авто покупка включена: {6}',
-                    'Старт покупки от: {7} золота',
-                    'Предмет покупки: {8}',
-                ]).format(bot_enabled, arena_enabled, les_enabled, corovan_enabled, order_enabled, auto_def_enabled, auto_buy_enabled, auto_by_gold_limit, auto_by_item))
+                    'Авто покупка включена: {7}',
+                    'Старт покупки от: {8} золота',
+                    'Предмет покупки: {9}',
+                ]).format(bot_enabled, arena_enabled, les_enabled, corovan_enabled, order_enabled, auto_def_enabled, auto_report_enable, auto_buy_enabled, auto_by_gold_limit, auto_by_item))
 
             # Информация о герое
             if text == '#hero':
