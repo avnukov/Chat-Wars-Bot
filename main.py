@@ -353,12 +353,13 @@ def parse_text(text, username, message_id):
                     'Корованы включены: {3}',
                     'Приказы включены: {4}',
                     'Авто деф включен: {5}',
-                    'Авто отчет включен: {6}'
+                    'Авто отчет: {6}',
+                    'Ночной режим: {10}',
                     ' ',
-                    'Авто покупка включена: {7}',
+                    'Авто покупка: {7}',
                     'Старт покупки от: {8} золота',
                     'Предмет покупки: {9}',
-                ]).format(bot_enabled, arena_enabled, les_enabled, corovan_enabled, order_enabled, auto_def_enabled, auto_report_enable, auto_buy_enabled, auto_by_gold_limit, auto_by_item))
+                ]).format(bot_enabled, arena_enabled, les_enabled, corovan_enabled, order_enabled, auto_def_enabled, auto_report_enable, auto_buy_enabled, auto_by_gold_limit, auto_by_item, night_mode))
 
             # Информация о герое
             if text == '#hero':
