@@ -87,6 +87,7 @@ hero_message_id = ''
 bot_enabled = True
 arena_enabled = True
 les_enabled = True
+night_mode = True
 corovan_enabled = True
 order_enabled = True
 auto_def_enabled = True
@@ -145,6 +146,10 @@ def parse_text(text, username, message_id):
     global auto_by_item
     global auto_report_enable
     global need_report
+    global night_mode
+
+    hour_begin_night = 2
+    hour_end_night = 6
 
     if bot_enabled and username == bot_username:
         log('Получили сообщение от бота. Проверяем условия')
@@ -173,15 +178,22 @@ def parse_text(text, username, message_id):
             # выставим флаг для заказа отчета перед осадой
             need_report = True
             # теперь узнаем, сколько у нас выносливости и золота
-            m = re.search('Золото: (-*[0-9]+)\\n.*Кристаллы: ([0-9]+)\\n.*Выносливость: ([0-9]+) из', text)
-            gold = int(m.group(1))
-            crystall = int(m.group(2))
-            endurance = int(m.group(3))
-            log('Золото: {0}, выносливость: {1}, кристаллы: {2}'.format(gold, endurance, crystall))
+            m = re.search('Выносливость: ([0-9]+) из ([0-9]+)', text)
+            gold = int(re.search('Золото: (-*[0-9]+)\\n', text).group(1))
+            crystall = int(re.search('Кристаллы: (-*[0-9]+)\\n', text).group(1))
+            endurance = int(m.group(1))
+            endurance_max = int(m.group(2))
+            current_hour = datetime.datetime.now().hour
+
+            log('Золото: {0}, выносливость: {1} из {2}, кристаллы: {3}'.format(gold, endurance, endurance_max, crystall))
             if les_enabled and endurance > 0 and '🌲Лес' not in action_list:
                 action_list.append('🌲Лес')
             elif arena_enabled and gold >= 5 and '🔎Поиск соперника' not in action_list and time() - lt_arena > 3600:
                 action_list.append('🔎Поиск соперника')
+            # Пока костыль, будет время допилю нормальный ночной режим
+            # Ночью грабим корованы
+            if night_mode and current_hour >= hour_begin_night and current_hour <= hour_end_night and endurance >1:
+                action_list.append('🐫ГРАБИТЬ КОРОВАНЫ')    
             
             if auto_buy_enabled and gold >= auto_by_gold_limit:
                 action_list.append(auto_by_item)
@@ -235,6 +247,8 @@ def parse_text(text, username, message_id):
                     '#disable_auto_def - Выключить авто деф',
                     '#enable_auto_report - Включить авто репорт',
                     '#disable_auto_report - Выключить авто репорт',
+                    '#enable_night_mode - Включить ночной режим',
+                    '#disable_night_mode - Выключить ночной режим',
                     '#enable_ab - Включить автопокупку',
                     '#disable_ab - Выключить авто покупку',
                     '#set_ab_gold_limit <number> - Установить лимит золота для старта покупки',
@@ -289,6 +303,14 @@ def parse_text(text, username, message_id):
             if text == '#disable_order':
                 order_enabled = False
                 send_msg(admin_username, 'Приказы успешно выключены')
+
+            # Вкл/выкл ночной режим
+            if text == '#enable_night_mode':
+                night_mode = True
+                send_msg(admin_username, 'Ночной режим успешно включены')
+            if text == '#disable_night_mode':
+                night_mode = False
+                send_msg(admin_username, 'Ночной режим успешно выключены')
 
             # Вкл/выкл автоматическую отправку отчета о битве
             if text == '#enable_auto_report':
