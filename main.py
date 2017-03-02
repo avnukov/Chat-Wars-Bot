@@ -86,8 +86,9 @@ hero_message_id = ''
 
 bot_enabled = True
 arena_enabled = True
-les_enabled = True
-night_mode = True
+les_enabled = False
+cave_enabled = True
+night_mode = False
 corovan_enabled = True
 order_enabled = True
 auto_def_enabled = True
@@ -138,6 +139,7 @@ def parse_text(text, username, message_id):
     global bot_enabled
     global arena_enabled
     global les_enabled
+    global cave_enabled
     global corovan_enabled
     global order_enabled
     global auto_def_enabled
@@ -148,7 +150,7 @@ def parse_text(text, username, message_id):
     global need_report
     global night_mode
 
-    hour_begin_night = 2
+    hour_begin_night = 0
     hour_end_night = 6
 
     if bot_enabled and username == bot_username:
@@ -186,7 +188,9 @@ def parse_text(text, username, message_id):
             current_hour = datetime.datetime.now().hour
 
             log('Золото: {0}, выносливость: {1} из {2}, кристаллы: {3}'.format(gold, endurance, endurance_max, crystall))
-            if les_enabled and endurance > 0 and '🌲Лес' not in action_list:
+            if cave_enabled and endurance > 1 and '🕸Пещера' not in action_list:
+                action_list.append('🕸Пещера')
+            elif les_enabled and endurance > 0 and '🌲Лес' not in action_list:
                 action_list.append('🌲Лес')
             elif arena_enabled and gold >= 5 and '🔎Поиск соперника' not in action_list and time() - lt_arena > 3600:
                 action_list.append('🔎Поиск соперника')
@@ -288,6 +292,14 @@ def parse_text(text, username, message_id):
                 les_enabled = False
                 send_msg(admin_username, 'Лес успешно выключен')
 
+            # Вкл/выкл пещеры
+            if text == '#enable_cave':
+                cave_enabled = True
+                send_msg(admin_username, 'Пещера успешно включена')
+            if text == '#disable_cave':
+                cave_enabled = False
+                send_msg(admin_username, 'Пещера успешно выключена')
+
             # Вкл/выкл корована
             if text == '#enable_corovan':
                 corovan_enabled = True
@@ -350,6 +362,7 @@ def parse_text(text, username, message_id):
                     'Бот включен: {0}',
                     'Арена включена: {1}',
                     'Лес включен: {2}',
+                    'Пещера включен: {11}',
                     'Корованы включены: {3}',
                     'Приказы включены: {4}',
                     'Авто деф включен: {5}',
@@ -359,7 +372,7 @@ def parse_text(text, username, message_id):
                     'Авто покупка: {7}',
                     'Старт покупки от: {8} золота',
                     'Предмет покупки: {9}',
-                ]).format(bot_enabled, arena_enabled, les_enabled, corovan_enabled, order_enabled, auto_def_enabled, auto_report_enable, auto_buy_enabled, auto_by_gold_limit, auto_by_item, night_mode))
+                ]).format(bot_enabled, arena_enabled, les_enabled, corovan_enabled, order_enabled, auto_def_enabled, auto_report_enable, auto_buy_enabled, auto_by_gold_limit, auto_by_item, night_mode, cave_enabled))
 
             # Информация о герое
             if text == '#hero':
