@@ -180,14 +180,13 @@ def parse_text(text, username, message_id):
             # выставим флаг для заказа отчета перед осадой
             need_report = True
             # теперь узнаем, сколько у нас выносливости и золота
-            m = re.search('Выносливость: ([0-9]+) из ([0-9]+)', text)
-            gold = int(re.search('Золото: (-*[0-9]+)\\n', text).group(1))
-            crystall = int(re.search('Кристаллы: (-*[0-9]+)\\n', text).group(1))
+            m = re.search('Выносливость: ([0-9]+)/([0-9]+)', text)
+            gold = 5#int(re.search('💰 (-*[0-9]+)\\n', text).group(1))
             endurance = int(m.group(1))
             endurance_max = int(m.group(2))
             current_hour = datetime.datetime.now().hour
 
-            log('Золото: {0}, выносливость: {1} из {2}, кристаллы: {3}'.format(gold, endurance, endurance_max, crystall))
+            log('Золото: {0}, выносливость: {1} из {2}'.format(gold, endurance, endurance_max))
             if cave_enabled and endurance > 1 and '🕸Пещера' not in action_list:
                 action_list.append('🕸Пещера')
             elif les_enabled and endurance > 0 and '🌲Лес' not in action_list:
