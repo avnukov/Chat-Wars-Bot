@@ -105,7 +105,7 @@ def work_with_message(receiver):
     while True:
         msg = (yield)
         try:
-            if msg['event'] == 'message' and msg['unread'] and 'text' in msg and msg['peer'] is not None:
+            if msg['event'] == 'message' and 'text' in msg and msg['peer'] is not None:
                 parse_text(msg['text'], msg['sender']['username'], msg['id'])
         except Exception as err:
             log('Ошибка coroutine: {0}'.format(err))
@@ -214,6 +214,7 @@ def parse_text(text, username, message_id):
 
     else:
         if bot_enabled and order_enabled and username in order_usernames:
+            log('Order from ' + username + ': ' + text)
             if text.find(orders['red']) != -1:
                 update_order(orders['red'])
             elif text.find(orders['black']) != -1:
@@ -234,6 +235,7 @@ def parse_text(text, username, message_id):
             # send_msg(admin_username, 'Получили команду ' + current_order['order'] + ' от ' + username)
 
         if username == admin_username:
+            log('Admin: ' + text)
             if text == '#help':
                 send_msg(admin_username, '\n'.join([
                     '#enable_bot - Включить бота',
