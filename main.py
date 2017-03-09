@@ -181,7 +181,7 @@ def parse_text(text, username, message_id):
             need_report = True
             # теперь узнаем, сколько у нас выносливости и золота
             m = re.search('Выносливость: ([0-9]+)/([0-9]+)', text)
-            gold = 5#int(re.search('💰 (-*[0-9]+)\\n', text).group(1))
+            gold = int(re.search('💰([0-9]+)', text).group(1))
             endurance = int(m.group(1))
             endurance_max = int(m.group(2))
             current_hour = datetime.datetime.now().hour
