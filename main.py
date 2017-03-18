@@ -155,6 +155,9 @@ def parse_text(text, username, message_id):
 
     if bot_enabled and username == bot_username:
         log('Получили сообщение от бота. Проверяем условия')
+        if text.find('Не умничай!') != -1 or text.find('охрана никого не пропускает') != -1:
+            bot_enabled = False
+            send_msg(admin_username, 'ВНИМАНИЕ! Обнаружен антибот. Работа бота приостановлена!')
 
         if corovan_enabled and text.find(' /go') != -1:
             action_list.append(orders['corovan'])
