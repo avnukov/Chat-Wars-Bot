@@ -113,6 +113,7 @@ def work_with_message(receiver):
 
 def queue_worker():
     global get_info_diff
+    global bot_enabled
     lt_info = 0
     while True:
         try:
@@ -121,12 +122,14 @@ def queue_worker():
             if time() - lt_info > get_info_diff:
                 lt_info = time()
                 get_info_diff = random.randint(600, 1200)
-                send_msg(bot_username, orders['hero'])
+                if bot_enabled:
+                    send_msg(bot_username, orders['hero'])
                 continue
 
             if len(action_list):
                 log('Отправляем ' + action_list[0])
-                send_msg(bot_username, action_list.popleft())
+                if bot_enabled:
+                    send_msg(bot_username, action_list.popleft())
             sleep_time = random.randint(2, 8)
             sleep(sleep_time)
         except Exception as err:
